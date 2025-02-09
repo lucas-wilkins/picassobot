@@ -83,4 +83,10 @@ def view_gcode(filename: str, pen_touch_height=5):
     for curve in pen_down_curves:
         plt.plot(curve[:, 0], curve[:, 1], color='k')
 
+    a4_x = [0, 0, 210, 210, 0]
+    a4_y = [0, 297, 297, 0, 0]
+
+    plt.plot(a4_x, a4_y)
+    plt.axis("equal")
+
     plt.show()

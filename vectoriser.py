@@ -1,8 +1,10 @@
-import cv2
-from abc import ABC, abstractmethod
-import numpy as np
 from typing import Optional
+from abc import ABC, abstractmethod
 
+import os
+
+import cv2
+import numpy as np
 import matplotlib.pyplot as plt
 
 def adjust_contrast_brightness(img, contrast:float=1.0, brightness:int=0):
@@ -22,7 +24,8 @@ class AbstractPathDrawer:
 
     def __init__(self,
                  x0: float = 210.0/2, y0: float = 297.0/2,
-                 x_size: float = 180.0, y_size: float = 250.0,
+                 x_size: float = 200.0, y_size: float = 200.0,
+                 logo_size: float=40, logo_x: float=210-30, logo_y: float = 30,
                  z_off: float = 10.0, z_on: float = 0.0,
                  speed: float = 100.0, pen_lift_speed: float = 100.0,
                  resolution=50_000, detail=40, brightness_scale=255):
@@ -35,6 +38,10 @@ class AbstractPathDrawer:
         self.y0 = y0
         self.x_size = x_size
         self.y_size = y_size
+
+        self.logo_size = logo_size
+        self.logo_x = logo_x
+        self.logo_y = logo_y
 
         self.z_off = z_off
         self.z_on = z_on
@@ -148,6 +155,9 @@ class AbstractPathDrawer:
         x = x_raw * self.x_size + self.x0
         y = y_raw * self.y_size + self.y0
 
+        output.append("")
+        output.append("; Main image")
+
         # Lift pen
         output.append("")
         output.append("; Lift pen")
@@ -174,6 +184,38 @@ class AbstractPathDrawer:
         output.append("; Lift pen")
         output.append(f"g0 z{self.z_off} f{self.pen_lift_speed}")
 
+        # Logo
+        output.append("")
+        output.append("; Logo")
+
+        for filename in os.listdir("data"):
+            if filename.startswith("logo_curve"):
+                path = np.load(os.path.join("data", filename))
+
+                x = self.logo_size * path[:, 0] + self.logo_x
+                y = self.logo_size * path[:, 1] + self.logo_y
+
+                # go to first position
+                output.append("")
+                output.append(f"; Start position - {filename}")
+                output.append(f"g0 x{x[0]} y{y[0]} f{self.speed}")
+
+                # drop pen
+                output.append("")
+                output.append("; Drop pen")
+                output.append(f"g0 z{self.z_on} f{self.pen_lift_speed}")
+
+                # draw curve
+                output.append("")
+                output.append("; Curve")
+                for xi, yi in zip(x[1:], y[1:]):
+                    output.append(f"g0 x{xi} y{yi} f{self.speed}")
+
+                # lift pen
+                output.append("")
+                output.append("; Lift pen")
+                output.append(f"g0 z{self.z_off} f{self.pen_lift_speed}")
+
         # Home
         output.append("")
         output.append("; Home")
@@ -195,7 +237,7 @@ class AbstractPathDrawer:
 class Spiral(AbstractPathDrawer):
     def base_path(self):
         positions = np.sqrt(np.linspace(0.0, 1.0, self.resolution))
-        angles = positions * (2*self.detail*np.pi)
+        angles = positions * (2*self.detail*np.pi) + np.pi/4
         x = 0.5 * np.sin(angles) * positions
         y = 0.5 * np.cos(angles) * positions
 
