@@ -18,6 +18,7 @@ def adjust_contrast_brightness(img, contrast:float=1.0, brightness:int=0):
     return cv2.addWeighted(img, contrast, img, 0, brightness)
 
 class AbstractPathDrawer:
+    """ Base class for things that draw paths"""
 
     def __init__(self,
                  x0: float = 210.0/2, y0: float = 297.0/2,
@@ -43,9 +44,10 @@ class AbstractPathDrawer:
 
     @abstractmethod
     def base_path(self):
-        pass
+        """ Generate the base path to work from"""
 
     def path(self):
+        """ Get extra information about the path"""
         x, y = self.base_path()
 
         dx = x[1:] - x[:-1]
@@ -64,11 +66,20 @@ class AbstractPathDrawer:
 
         return s, x, y, nx, ny
 
+    def show_base_curve(self):
+        x, y = self.base_path()
+        print(f"x in [{min(x)}, {max(x)}]")
+        print(f"y in [{min(y)}, {max(y)}]")
+        plt.plot(x, y)
+        plt.show()
+
     @abstractmethod
     def elaboration(self, position, value):
-        pass
+        """ How to change the path, displacement normal to curve"""
 
     def vectorise(self, im, show: Optional[str]="Vectorising..."):
+        """ Create the path needed to draw an image, scaled to (-0.5,0.5) on each axis"""
+
 
         if show:
             cv2.imshow(show, im)
@@ -124,12 +135,15 @@ class AbstractPathDrawer:
         return x_adjusted, y_adjusted
 
     def gcode(self, im, show="Vectorising..."):
+        """
+        Generate gcode for an image
+        """
         x_raw, y_raw = self.vectorise(im, show)
 
         output = []
 
-        x_home = self.x0
-        y_home = self.y0
+        x_home = 0
+        y_home = 0
 
         x = x_raw * self.x_size + self.x0
         y = y_raw * self.y_size + self.y0
@@ -207,6 +221,40 @@ class Snek(AbstractPathDrawer):
 
         return x-0.5, y-0.5
 
+class Pentagon(AbstractPathDrawer):
+    def base_path(self):
+        positions = np.sqrt(np.linspace(0.0, 1.0, self.resolution))
+        angles = positions * (2*(self.detail-1)*np.pi) + 2*np.pi
+        r = (angles + (1 + (4/self.detail)*angles) * np.sin(5*angles)) / (self.detail*np.pi)
+
+        x = np.cos(angles) * r
+        y = np.sin(angles) * r
+
+        # times 2 because we want to map to [-0.5, 0.5]
+        scale = 2*max([np.max(x), np.max(-x), np.max(y), np.max(-y)])
+
+        x /= scale
+        y /= scale
+
+        return x, y
+
+
+class Square(AbstractPathDrawer):
+    def base_path(self):
+        positions = np.sqrt(np.linspace(0.0, 1.0, self.resolution))
+        angles = positions * (2*(self.detail-1)*np.pi) + 2*np.pi
+        r = (angles + (1 + (4/self.detail)*angles) * np.sin(4*angles - np.pi/2)) / (self.detail*np.pi)
+
+        x = np.cos(angles) * r
+        y = np.sin(angles) * r
+
+        # times 2 because we want to map to [-0.5, 0.5]
+        scale = 2*max([np.max(x), np.max(-x), np.max(y), np.max(-y)])
+
+        x /= scale
+        y /= scale
+
+        return x, y
 
 class Sine(AbstractPathDrawer):
     def elaboration(self, position, value):
@@ -242,18 +290,26 @@ class SpiralTriangle(Spiral, Triangle):
 class SnekTriangle(Snek, Triangle):
     pass
 
+class PentagonSine(Pentagon, Sine):
+    pass
 
+class SquareSine(Square, Sine):
+    pass
 
 # List of different drawing methods, triangle is shit
-
-methods = [SpiralSine,
-           # SpiralTriangle,
-           SnekSine,
-           # SnekTriangle
+methods = [
+            # SpiralTriangle,
+            # SnekTriangle
+            SpiralSine,
+            SnekSine,
+            SquareSine,
+            PentagonSine,
 ]
+
 
 if __name__ == "__main__":
     from load_test_image import load_image
+    from gcode_viewer import view_gcode
 
     im = load_image()
 
@@ -261,12 +317,17 @@ if __name__ == "__main__":
 
         vectoriser = cls()
 
+        # vectoriser.show_base_curve()
         # vectoriser.show_elaboration()
 
-        x, y = vectoriser.vectorise(im, show=None)
-        plt.plot(x, y)
-        plt.show()
+        # x, y = vectoriser.vectorise(im, show=None)
+        # plt.plot(x, y)
+        # plt.show()
 
-        with open(f"test_{cls.__name__}.gcode", 'w') as file:
+        filename = f"test_{cls.__name__}.gcode"
+
+        with open(filename, 'w') as file:
             file.write(vectoriser.gcode(im, show=None))
             file.write("\n")
+
+        view_gcode(filename)
