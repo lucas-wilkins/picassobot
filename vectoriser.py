@@ -26,6 +26,7 @@ class AbstractPathDrawer:
                  x0: float = 210.0/2, y0: float = 297.0/2,
                  x_size: float = 200.0, y_size: float = 200.0,
                  logo_size: float=40, logo_x: float=210-30, logo_y: float = 30,
+                 title_size: float = 100, title_x = 210/2, title_y: float = 297 - 30,
                  z_off: float = 10.0, z_on: float = 0.0,
                  speed: float = 100.0, pen_lift_speed: float = 100.0,
                  resolution=50_000, detail=40, brightness_scale=255):
@@ -42,6 +43,10 @@ class AbstractPathDrawer:
         self.logo_size = logo_size
         self.logo_x = logo_x
         self.logo_y = logo_y
+
+        self.title_size = title_size
+        self.title_x = title_x
+        self.title_y = title_y
 
         self.z_off = z_off
         self.z_on = z_on
@@ -184,16 +189,37 @@ class AbstractPathDrawer:
         output.append("; Lift pen")
         output.append(f"g0 z{self.z_off} f{self.pen_lift_speed}")
 
+
+        # Title
+        output.append("")
+        output.append("; Title")
+
+        output += self.data_curves("title_curve", self.title_size, self.title_x, self.title_y)
+
         # Logo
         output.append("")
         output.append("; Logo")
 
+        output += self.data_curves("logo_curve", self.logo_size, self.logo_x, self.logo_y)
+
+
+        # Home
+        output.append("")
+        output.append("; Home")
+        output.append(f"g0 x{x_home} y{y_home} f{self.speed}")
+
+        return "\n".join(output)
+
+    def data_curves(self, file_prefix, size, x0, y0):
+
+        output = []
+
         for filename in os.listdir("data"):
-            if filename.startswith("logo_curve"):
+            if filename.startswith(file_prefix):
                 path = np.load(os.path.join("data", filename))
 
-                x = self.logo_size * path[:, 0] + self.logo_x
-                y = self.logo_size * path[:, 1] + self.logo_y
+                x = size * path[:, 0] + x0
+                y = size * path[:, 1] + y0
 
                 # go to first position
                 output.append("")
@@ -216,12 +242,7 @@ class AbstractPathDrawer:
                 output.append("; Lift pen")
                 output.append(f"g0 z{self.z_off} f{self.pen_lift_speed}")
 
-        # Home
-        output.append("")
-        output.append("; Home")
-        output.append(f"g0 x{x_home} y{y_home} f{self.speed}")
-
-        return "\n".join(output)
+        return output
 
     def show_elaboration(self, n=1000):
         """ Show a plot of the elaboration curve"""

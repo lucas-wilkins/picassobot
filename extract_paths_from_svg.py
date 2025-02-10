@@ -97,6 +97,8 @@ def extract_paths(filename: str):
         paths.append(path)
 
 
+    paths = sorted(paths, key=lambda x: np.min(x[:, 0])) # sort paths left to right
+
     left = min([np.min(path[:, 0]) for path in paths])
     right = max([np.max(path[:, 0]) for path in paths])
     top = max([np.max(path[:, 1]) for path in paths])
@@ -121,9 +123,14 @@ def extract_paths(filename: str):
 
 
 if __name__ == "__main__":
+
+    paths = extract_paths("data/title_text.svg")
+
+    for i, data in enumerate(paths):
+        np.save(f"data/title_curve_{i}.npy", data)
+
     paths = extract_paths("data/makerspace_logo_cleaned.svg")
 
     for i, data in enumerate(paths):
         np.save(f"data/logo_curve_{i}.npy", data)
 
-    # print(paths)
