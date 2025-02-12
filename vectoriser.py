@@ -121,7 +121,7 @@ class AbstractPathDrawer:
             cv2.imshow(show, im)
             cv2.waitKey(0)
 
-        im = adjust_contrast_brightness(im, contrast=2)
+        im = adjust_contrast_brightness(im, contrast=1.2)
         if show:
             cv2.imshow(show, im)
             cv2.waitKey(0)

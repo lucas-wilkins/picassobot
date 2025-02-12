@@ -47,7 +47,7 @@ Would you like to hear a joke?
 
 JOKE ACCEPTED - COMMENCING JOKE
 
-I human tried to find the biggest prime number ever found
+A human tried to find the biggest prime number ever found
 
 The final digits in binary were 00101010111010101001110
 
