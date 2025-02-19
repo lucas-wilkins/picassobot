@@ -1,7 +1,9 @@
+from typing import Optional
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-def view_gcode(filename: str, pen_touch_height=5):
+def view_gcode(filename: str, pen_touch_height=5, output_filename: Optional[str]=None):
     """ View plotter gcode"""
 
     x = 0
@@ -89,4 +91,11 @@ def view_gcode(filename: str, pen_touch_height=5):
     plt.plot(a4_x, a4_y)
     plt.axis("equal")
 
-    plt.show()
+    if output_filename is None:
+
+        plt.show()
+
+    else:
+        plt.gcf().set_size_inches(4, 3)
+        plt.savefig("gcode_preview.png", dpi=96)
+        plt.clf()

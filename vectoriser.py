@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional
 from abc import ABC, abstractmethod
 
@@ -189,13 +190,13 @@ class AbstractPathDrawer:
         output.append("; Lift pen")
         output.append(f"g0 z{self.z_off} f{self.pen_lift_speed}")
 
-
-        # Title
-        output.append("")
-        output.append("; Title")
-
-        output += self.data_curves("title_curve", self.title_size, self.title_x, self.title_y)
-
+        #
+        # # Title
+        # output.append("")
+        # output.append("; Title")
+        #
+        # output += self.data_curves("title_curve", self.title_size, self.title_x, self.title_y)
+        #
         # Logo
         output.append("")
         output.append("; Logo")
@@ -359,16 +360,29 @@ class PentagonSine(Pentagon, Sine):
 class SquareSine(Square, Sine):
     pass
 
-# List of different drawing methods, triangle is shit
-methods = [
-            # SpiralTriangle,
-            # SnekTriangle
-            SpiralSine,
-            SnekSine,
-            SquareSine,
-            PentagonSine,
-]
+# # List of different drawing methods, triangle is shit
+# methods = [
+#             # SpiralTriangle,
+#             # SnekTriangle
+#             SpiralSine,
+#             SnekSine,
+#             SquareSine,
+#             PentagonSine,
+# ]
 
+
+class Shape(Enum):
+    SQUARE = "square"
+    CIRCLE = "circle"
+    SNEK = "snek"
+    STAR = "star"
+
+methods = {
+    Shape.SQUARE: SquareSine,
+    Shape.CIRCLE: SpiralSine,
+    Shape.SNEK: SnekSine,
+    Shape.STAR: PentagonSine
+}
 
 if __name__ == "__main__":
     from load_test_image import load_image

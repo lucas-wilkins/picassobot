@@ -1,15 +1,17 @@
 import numpy as np
 import sounddevice as sd
 from scipy.io import wavfile
-import time
 
 import numpy as np
 import sounddevice as sd
 from scipy.io import wavfile
 
+from coms import SerialWrapper
+
 # Initialize the current index
 current_index = 0
 
+s = SerialWrapper()
 
 def play_audio(filename):
 
@@ -46,7 +48,28 @@ def play_audio(filename):
 
         # Calculate and print the mean amplitude
         mean_amplitude = np.mean(np.abs(chunk))
-        print(f"Mean Amplitude: {mean_amplitude:.2f}")
+
+        # Scale to be nice for driving a servo...
+
+        # Truncate of bottom
+        if mean_amplitude > 50:
+            mean_amplitude -= 50
+        else:
+            mean_amplitude = 0
+
+        n = mean_amplitude / 1000
+
+        # Cut off top
+        if n > 1:
+            n = 1
+
+
+        n *= 90 # Angle range in degs
+        n = int(n)
+
+        # print("*"*n)
+        s(n)
+
 
         # Update the current index for the next chunk
         current_index = end_index
@@ -60,3 +83,4 @@ def play_audio(filename):
 
 if __name__ == "__main__":
     play_audio("audio/test.wav")
+    print("Done")

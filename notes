@@ -1,0 +1,8 @@
+target screen resolution 1920x1080 (16:9)
+camera 640x480 (4:3)
+
+pad total = 853.3
+
+pad diff = 853.333 - 640 = 213.333
+pad per side = 106.666 ~= 107
+
