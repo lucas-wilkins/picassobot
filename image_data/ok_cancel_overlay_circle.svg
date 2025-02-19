@@ -8,8 +8,8 @@
    version="1.1"
    id="svg5"
    inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
-   sodipodi:docname="ok_cancel_overlay.svg"
-   inkscape:export-filename="ok_cancel_overlay.png"
+   sodipodi:docname="ok_cancel_overlay_circle.svg"
+   inkscape:export-filename="ok_cancel_overlay_circle.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -27,15 +27,37 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="0.73851712"
-     inkscape:cx="396.74097"
-     inkscape:cy="303.3105"
+     inkscape:zoom="1.0444209"
+     inkscape:cx="44.043546"
+     inkscape:cy="265.21874"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1" />
+     inkscape:current-layer="layer1"
+     showguides="true">
+    <sodipodi:guide
+       position="10.566289,81.712943"
+       orientation="0,-1"
+       id="guide8839"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="10.566289,112.1948"
+       orientation="0,-1"
+       id="guide8841"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="10.566289,81.712943"
+       orientation="1,0"
+       id="guide8843"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="56.182281,112.1948"
+       orientation="1,0"
+       id="guide8845"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
   <defs
      id="defs2" />
   <g
@@ -43,7 +65,7 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:#87deaa;fill-opacity:1;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke:#000000;stroke-opacity:1"
+       style="fill:#87deaa;fill-opacity:1;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter;stroke:#000000;stroke-opacity:1"
        id="rect2066"
        width="47.29071"
        height="31.527142"
@@ -61,24 +83,37 @@
     <text
        xml:space="preserve"
        style="font-size:11.056px;font-family:sans-serif;-inkscape-font-specification:sans-serif;fill:#000000;fill-opacity:1;stroke-width:3.13398;stroke-linecap:round;stroke-linejoin:round"
-       x="137.41035"
-       y="107.20427"
+       x="124.58636"
+       y="107.20966"
        id="text4872"><tspan
          sodipodi:role="line"
          id="tspan4870"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';fill:#000000;fill-opacity:1;stroke-width:3.13398"
-         x="137.41035"
-         y="107.20427">OK</tspan></text>
+         x="124.58636"
+         y="107.20966">DRAW!</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:11.056px;font-family:sans-serif;-inkscape-font-specification:sans-serif;fill:#000000;fill-opacity:1;stroke-width:3.13398;stroke-linecap:round;stroke-linejoin:round"
+       style="font-size:11.056px;font-family:sans-serif;-inkscape-font-specification:sans-serif;fill:#000000;fill-opacity:1;stroke-width:3.13398;stroke-linecap:square;stroke-linejoin:miter"
        x="3.548938"
        y="107.30144"
        id="text5084"><tspan
          sodipodi:role="line"
          id="tspan5082"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';stroke-width:3.13398"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';stroke-width:3.13398;stroke-linejoin:miter;stroke-linecap:square"
          x="3.548938"
          y="107.30144">Cancel</tspan></text>
+    <rect
+       style="fill:#8787de;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4107"
+       width="45.615993"
+       height="30.481863"
+       x="10.566289"
+       y="14.805194" />
+    <circle
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.07754;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+       id="path3891"
+       cx="33.251934"
+       cy="30.046127"
+       r="8.7095451" />
   </g>
 </svg>

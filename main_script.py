@@ -5,6 +5,7 @@ import numpy as np
 
 from vectoriser import methods, Shape
 from gcode_viewer import view_gcode
+from bot_interface import print_gcode
 
 FRAME_TIME = 15
 FPS = 500 // FRAME_TIME
@@ -19,8 +20,17 @@ countdown_3_mask = cv2.imread("image_data/countdown_3.png") / 255.0
 
 shape_choice = cv2.imread("image_data/shape_choice.png")
 processing_message = cv2.imread("image_data/processing.png")
+drawing_message = cv2.imread("image_data/drawing.png")
 
-ok_cancel_overlay = cv2.imread("image_data/ok_cancel_overlay.png", cv2.IMREAD_UNCHANGED)
+ok_cancel_overlay = {
+    Shape.CIRCLE: cv2.imread("image_data/ok_cancel_overlay_circle.png", cv2.IMREAD_UNCHANGED),
+    Shape.SQUARE: cv2.imread("image_data/ok_cancel_overlay_square.png", cv2.IMREAD_UNCHANGED),
+    Shape.SNEK: cv2.imread("image_data/ok_cancel_overlay_snek.png", cv2.IMREAD_UNCHANGED),
+    Shape.STAR: cv2.imread("image_data/ok_cancel_overlay_star.png", cv2.IMREAD_UNCHANGED)
+}
+
+wait_overlay = cv2.imread("image_data/wait_overlay.png", cv2.IMREAD_UNCHANGED)
+locked_overlay = cv2.imread("image_data/locked_overlay.png", cv2.IMREAD_UNCHANGED)
 
 white = np.zeros((480, 640, 3), dtype=np.uint8) + 255
 
@@ -39,6 +49,7 @@ current_picture = None
 
 class Mode(Enum):
     WAIT = "wait"
+    LOCKED = "locked"
     CAPTURE = "capture"
     COUNTDOWN_1 = "countdown_1"
     COUNTDOWN_2 = "countdown_2"
@@ -63,7 +74,7 @@ def mouse_callback(event, x, y, flags, param):
 
 cv2.setMouseCallback(window_name, mouse_callback)
 
-mode = Mode.WAIT
+mode = Mode.LOCKED
 photo = None
 
 
@@ -84,8 +95,7 @@ while True:
 
     ret, photo = cap.read()
 
-    if mode == Mode.WAIT:
-        next_mode = Mode.CAPTURE
+    if mode == Mode.WAIT or mode == Mode.LOCKED:
 
         if ret:
 
@@ -95,7 +105,37 @@ while True:
 
             photo = cv2.merge((gray, gray, gray))
 
-            pad_display(photo) # ok_cancel_overlay)
+        if mode == Mode.WAIT:
+            next_mode = Mode.SHAPE_QUESTION
+            pad_display(overlay_image(photo, wait_overlay))
+
+        else:
+            next_mode = Mode.LOCKED
+            pad_display(overlay_image(photo, locked_overlay))
+
+    elif mode == Mode.SHAPE_QUESTION:
+        next_mode = Mode.SHAPE_CHOOSE
+
+        pad_display(shape_choice)
+
+    elif mode == Mode.SHAPE_CHOOSE:
+        next_mode = None
+
+        if mouse_xy[0] < 320:
+            if mouse_xy[1] < 270:
+                shape = Shape.CIRCLE
+            else:
+                shape = Shape.SNEK
+        else:
+
+
+            if mouse_xy[1] < 270:
+                shape = Shape.SQUARE
+            else:
+                shape = Shape.STAR
+
+        mode = Mode.CAPTURE
+
 
 
     elif mode == Mode.CAPTURE:
@@ -168,7 +208,7 @@ while True:
         next_mode = None
 
         if counter is None:
-            counter = 3
+            counter = 2
 
         else:
             if counter < 1:
@@ -186,42 +226,18 @@ while True:
 
         circled = np.array(current_picture * circle_mask, dtype=np.uint8)
 
-        pad_display(overlay_image(circled, ok_cancel_overlay))
+        pad_display(overlay_image(circled, ok_cancel_overlay[shape]))
 
     elif mode == Mode.USE_PHOTO_CHOOSE:
         next_mode = None
 
         if mouse_xy[0] < 320:
-            mode = Mode.CAPTURE
+            mode = Mode.WAIT
         else:
-            mode = Mode.SHAPE_QUESTION
+            mode = Mode.PROCESS
 
-        continue
+        pad_display(drawing_message)
 
-    elif mode == Mode.SHAPE_QUESTION:
-        next_mode = Mode.SHAPE_CHOOSE
-
-        pad_display(shape_choice)
-
-    elif mode == Mode.SHAPE_CHOOSE:
-        next_mode = None
-
-        if mouse_xy[0] < 320:
-            if mouse_xy[1] < 270:
-                shape = Shape.CIRCLE
-            else:
-                shape = Shape.SNEK
-        else:
-
-
-            if mouse_xy[1] < 270:
-                shape = Shape.SQUARE
-            else:
-                shape = Shape.STAR
-
-        pad_display(processing_message)
-        mode = Mode.PROCESS
-        continue
 
     elif mode == Mode.PROCESS:
         next_mode = None
@@ -234,14 +250,15 @@ while True:
 
         view_gcode(filename, output_filename="preview.png")
 
+        pad_display(drawing_message)
+
         mode = Mode.DRAW
-        continue
 
     elif mode == Mode.DRAW:
-        next_mode = Mode.WAIT
 
-        pad_display(white)
+        print_gcode(filename)
 
+        mode = Mode.WAIT
 
     key = cv2.waitKey(15) & 0xFF
 
@@ -255,6 +272,13 @@ while True:
 
     elif key == 13:
         mode = next_mode
+        mouse_click = False
+
+    elif key == ord("l"):
+        if mode == Mode.LOCKED:
+            mode = Mode.WAIT
+        else:
+            mode = Mode.LOCKED
 
     elif key == ord('q'):
         break
