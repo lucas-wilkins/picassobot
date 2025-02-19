@@ -29,7 +29,7 @@ class AbstractPathDrawer:
                  logo_size: float=40, logo_x: float=210-30, logo_y: float = 30,
                  title_size: float = 100, title_x = 210/2, title_y: float = 297 - 30,
                  z_off: float = 10.0, z_on: float = 0.0,
-                 speed: float = 100.0, pen_lift_speed: float = 100.0,
+                 speed: float = 3000.0, pen_lift_speed: float = 1000.0,
                  resolution=50_000, detail=40, brightness_scale=255):
 
         self.resolution = resolution
@@ -134,6 +134,7 @@ class AbstractPathDrawer:
         # scale is one more than the maximum index, some bodges around that
         x_px = np.array((x+0.5)*scale*0.99999, dtype=int)
         y_px = np.array((y+0.5)*scale*0.99999, dtype=int)
+        # values = im[y_px, x_px]
         values = im[scale-1-y_px, x_px]
 
         offsets = self.elaboration(s, values)
@@ -159,7 +160,7 @@ class AbstractPathDrawer:
         y_home = 0
 
         x = x_raw * self.x_size + self.x0
-        y = y_raw * self.y_size + self.y0
+        y = -y_raw * self.y_size + self.y0
 
         output.append("")
         output.append("; Main image")
@@ -220,7 +221,7 @@ class AbstractPathDrawer:
                 path = np.load(os.path.join("data", filename))
 
                 x = size * path[:, 0] + x0
-                y = size * path[:, 1] + y0
+                y = -size * path[:, 1] + y0
 
                 # go to first position
                 output.append("")

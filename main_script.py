@@ -1,3 +1,4 @@
+import time
 from enum import Enum
 
 import cv2
@@ -6,6 +7,19 @@ import numpy as np
 from vectoriser import methods, Shape
 from gcode_viewer import view_gcode
 from bot_interface import print_gcode
+from kipper_control import print_file
+
+
+KLIPPER_URL = "http://169.254.171.193:7125"
+VIDEO_DEVICE = 1
+WINDOW_MODE = False
+MIRROR = True
+X0 = 210.0/2
+Y0 = 297.0/2
+SPEED = 2000
+DO_PRINT = True
+
+
 
 FRAME_TIME = 15
 FPS = 500 // FRAME_TIME
@@ -38,15 +52,19 @@ edge = np.zeros((480, 107, 3), dtype=np.uint8)
 
 
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(VIDEO_DEVICE)
 
 window_name = 'Picassobot'
 
-cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+if WINDOW_MODE:
+    cv2.imshow(window_name, white)
+else:
+    cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+    cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
 current_picture = None
 
+# States for the main loop
 class Mode(Enum):
     WAIT = "wait"
     LOCKED = "locked"
@@ -91,9 +109,16 @@ def overlay_image(source, overlay):
 
 counter = None
 
+#
+# Main loop
+#
+
 while True:
 
     ret, photo = cap.read()
+
+    if ret and MIRROR:
+        photo = photo[:,::-1,:]
 
     if mode == Mode.WAIT or mode == Mode.LOCKED:
 
@@ -121,7 +146,7 @@ while True:
     elif mode == Mode.SHAPE_CHOOSE:
         next_mode = None
 
-        if mouse_xy[0] < 320:
+        if mouse_xy[0] < 427:
             if mouse_xy[1] < 270:
                 shape = Shape.CIRCLE
             else:
@@ -133,6 +158,8 @@ while True:
                 shape = Shape.SQUARE
             else:
                 shape = Shape.STAR
+
+        print(shape, "chosen")
 
         mode = Mode.CAPTURE
 
@@ -242,13 +269,16 @@ while True:
     elif mode == Mode.PROCESS:
         next_mode = None
 
-        converter = methods[shape]()
+        converter = methods[shape](x0=X0, y0=Y0, speed=SPEED)
+
+        print(converter.__class__.__name__)
 
         with open(filename, 'w') as file:
             file.write(converter.gcode(current_picture, show=None))
             file.write("\n")
 
-        view_gcode(filename, output_filename="preview.png")
+        # Don't use this, it will unfocus the cv2 window!!!!!!!
+        # view_gcode(filename, output_filename="preview.png")
 
         pad_display(drawing_message)
 
@@ -256,9 +286,18 @@ while True:
 
     elif mode == Mode.DRAW:
 
-        print_gcode(filename)
+        #
+        # Main print code
+        #
+        if DO_PRINT:
+            print_file(KLIPPER_URL)
 
-        mode = Mode.WAIT
+        mode = Mode.LOCKED
+        mouse_click = False
+
+    #
+    # Key/mouse responses
+    #
 
     key = cv2.waitKey(15) & 0xFF
 
@@ -270,18 +309,21 @@ while True:
 
             mouse_click = False
 
-    elif key == 13:
-        mode = next_mode
-        mouse_click = False
+    else:
+        print(key)
 
-    elif key == ord("l"):
-        if mode == Mode.LOCKED:
-            mode = Mode.WAIT
-        else:
-            mode = Mode.LOCKED
+        if key == 13:
+            mode = next_mode
+            mouse_click = False
 
-    elif key == ord('q'):
-        break
+        elif key == ord("l"):
+            if mode == Mode.LOCKED:
+                mode = Mode.WAIT
+            else:
+                mode = Mode.LOCKED
+
+        elif key == ord('q'):
+            break
 
 
 
